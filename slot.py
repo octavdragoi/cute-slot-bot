@@ -11,7 +11,7 @@ class CuteSlotMachine:
     def spin(self):
         draw_idx = np.random.randint(self.n_items, size = self.size)
         draw = [items[x] for x in draw_idx]
-        return draw
+        return ' '.join(draw)
 
 
 if __name__ == "__main__":

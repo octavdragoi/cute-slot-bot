@@ -16,9 +16,14 @@ bot.
 """
 
 import logging
+from uuid import uuid4
 from slot import CuteSlotMachine
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import InlineQueryResultArticle, ParseMode, \
+    InputTextMessageContent
+from telegram.ext import Updater, InlineQueryHandler, \
+    CommandHandler, MessageHandler, Filters
+from telegram.utils.helpers import escape_markdown
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -41,7 +46,7 @@ def help(update, context):
 
 def spin(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(' '.join(csm.spin()))
+    update.message.reply_text(csm.spin())
 
 def echo(update, context):
     """Echo the user message."""
@@ -52,6 +57,18 @@ def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
+def inlinequery(update, context):
+    """Handle the inline query."""
+    draw = csm.spin()
+    results = [
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Take me for a spin!",
+            input_message_content=InputTextMessageContent(
+                draw))
+        ]
+
+    update.inline_query.answer(results, cache_time = 0)
 
 def main():
     """Start the bot."""
@@ -70,6 +87,8 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
+
+    dp.add_handler(InlineQueryHandler(inlinequery))
 
     # log all errors
     dp.add_error_handler(error)
